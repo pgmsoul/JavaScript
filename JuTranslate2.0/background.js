@@ -1,6 +1,7 @@
 
-function ju_ajax(url,word,soundUrl,sendResponse){
+function ju_ajax(msg,sendResponse){
 	try{
+		var url = msg.protocol + "//fanyi.youdao.com/openapi.do?keyfrom=jsusecom&key=1798034141&type=data&doctype=json&version=1.1&q="+encodeURIComponent(msg.word);
 		var ajax = new XMLHttpRequest();
 		ajax.open("GET", url, true);
 		ajax.onreadystatechange = function() {
@@ -9,31 +10,23 @@ function ju_ajax(url,word,soundUrl,sendResponse){
 			if(!json){
 				return;
 			}
-			json.sound = soundUrl;
-			json.word = word;
-			sendResponse(json);
-			/*if (queryWord.indexOf("-") !== -1 && !self.checkErrorCode(result.errorCode).error && !self.haveTranslation(result)) {
-				//优化使用连字符的词的查询结果
-				new ChaZD(queryWord.replace(/-/g, " "), useHttps, wordSource, sendResponse);
-			} else {
-				var resultObj = self.parseResult.call(self, result);
-				sendResponse(resultObj);
-			}*/
+			if(json.errorCode==0){
+				sendResponse(json);
+			}else if (msg.word.indexOf("-") !== -1) {
+				ju_ajax(msg.word.replace(/-/g, ""),sendResponse);
+			}
 		};
 		ajax.send();
 	}catch(e){
 		sendResponse(e.message);
 	}
+	return true;
 }
 
 chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse){
 	if(!msg.word&&!msg.protocol){
 		return;
 	}
-	var url = msg.protocol + "//fanyi.youdao.com/openapi.do?keyfrom=jsusecom&key=1798034141&type=data&doctype=json&version=1.1&q="+encodeURIComponent(msg.word);
-	msg.url = url;
-	var soundUrl = msg.protocol + "//dict.youdao.com/dictvoice?audio="+msg.word+"&type=1";
-	msg.sound = soundUrl;
-	ju_ajax(url,msg.word,soundUrl,sendResponse);
+	ju_ajax(msg,sendResponse);
 	return true;
 });
