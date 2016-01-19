@@ -9,7 +9,7 @@ document.body.addEventListener('mouseup',function(){
 	if(sel!=""){
 		if(sel.length>64) return;
 		if(fanyi.style.display=="block"){
-			jsonp(sel);
+			chrome.extension.sendMessage(sel,document.location.protocol);
 		}
 	}else{
 		if(fanyi.style.display=="block"){
@@ -18,9 +18,9 @@ document.body.addEventListener('mouseup',function(){
 		}		
 	}
 });
-chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
+chrome.extension.onMessage.addListener(function(result, sender, sendResponse) {
 	var fanyi = document.getElementById("jsuse_fanyi_div");
-	if(request.fanyi_command === "switch_fanyi"){
+	if(result.fanyi_command === "switch_fanyi"){
 		if(fanyi.style.display!="none"){
 			fanyi.style.display = "none";
 			sendResponse({"show":"Close"});
@@ -28,17 +28,10 @@ chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
 			fanyi.style.display = "block";
 			sendResponse({"show":"Show"});
 		}
+	}else if(result.fanyi_command === "fanyi"){
+		createHtml(result);
 	}
 });
-function jsonp(word) {
-	var oHead = document.head;
-	var oS = document.createElement('script');
-	oHead.appendChild(oS);
-	oS.src = "https://jsuse.sinaapp.com/tools/english/fanyi_jsonp.html?word="+encodeURIComponent(word)+"&code="+document.characterSet;
-	oS.timer = setTimeout(function () {
-		oHead.removeChild(oS);
-	}, 10000);
-};
 
 function safe_html(str){
 	if(typeof str!="string") return "";
@@ -57,12 +50,14 @@ function createFanyiDiv(){
 	fanyi.style.position = "fixed";
 	fanyi.style.top = 0;
 	fanyi.style.right = 0;
-	fanyi.style.borderLeft = "1px solid #bbb";
-	fanyi.style.borderBottom = "1px solid #bbb";
-	fanyi.style.background = "#ffa";
+	fanyi.style.borderLeft = "1px solid #eee";
+	fanyi.style.borderBottom = "1px solid #eee";
+	fanyi.style.background = "#f6f6f6";
 	fanyi.style.padding = "1em";
 	fanyi.style.zIndex = "1999999999";
 	fanyi.style.display = "none";
+	fanyi.style.boxShadow = "1px 1px 5px 1px #ddd";
+	fanyi.style.borderBottomLeftRadius = "10px";
 	fanyi.innerHTML = "load success";
 	document.body.appendChild(fanyi);
 }
@@ -91,16 +86,5 @@ function create_html(data){
 	return fanyi_html;
 }
 createFanyiDiv();
-/*chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
-	var fanyi = $("#jsuse_fanyi");
-	if(request.fanyi_command === "switch_fanyi"){
-		if(fanyi.length==0){
-			$(document.body).prepend('<iframe id="jsuse_fanyi" frameborder="0" src="http://jsuse.sinaapp.com/tools/english/fanyi.html" width="200px" height="300px" style="position:fixed;top:0;right:0;z-index:2147483647;">');
-			sendResponse({"show":"show"});
-		}else{
-			$("#jsuse_fanyi").remove();
-			sendResponse({"show":"close"});
-		}
-	}
-});*/
+
 
