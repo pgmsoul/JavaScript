@@ -4,8 +4,9 @@ function get_select_text(){
 	return sel.trim();
 }
 document.body.addEventListener('mouseup',function(e){
-	var sel = get_select_text();
 	var fanyi = document.getElementById("jsuse_fanyi_div");
+	if(!fanyi) return;
+	var sel = get_select_text();
 	if(isInFanyiDiv(e.target)) return;
 	if(sel!=""){
 		if(sel.length>64) return;
@@ -30,7 +31,7 @@ function isInFanyiDiv(target){
 }
 
 function onFanyiSuccess(data){
-	var fanyi_html = "<div style='padding-bottom:0.3em;text-align:left;font-size:20px;'>"+safe_html(data.query)+"&nbsp;&nbsp;<img id='_ju_sound_img' style='margin-bottom:-0.21em;cursor:pointer;' width='24px' height='22px' src='"+
+	var fanyi_html = "<div style='padding-bottom:0.3em;text-align:left;font-size:20px;font-family:Times New Roman;'><span style='display:inline-block;vertical-align:middle;'>"+safe_html(data.query)+"</span>&nbsp;&nbsp;<img id='_ju_sound_img' style='vertical-align:middle;cursor:pointer;display:inline-block;width:24px;height:22px;' src='"+
 	_ju_sound_url+"0.png'>"+
 	"<audio id='_ju_sound' src='"+document.location.protocol+"//dict.youdao.com/dictvoice?audio="+encodeURIComponent(data.query)+"'></div>";
 	if(data.errorCode!=0){
@@ -109,13 +110,13 @@ function showFanyi(html){
 	});
 }
 chrome.extension.onMessage.addListener(function(result, sender, sendResponse) {
-	var fanyi = document.getElementById("jsuse_fanyi_div");
 	if(result.fanyi_command === "switch_fanyi"){
-		if(fanyi.style.display!="none"){
-			fanyi.style.display = "none";
+		var fanyi = document.getElementById("jsuse_fanyi_div");
+		if(fanyi){
+			fanyi.remove(fanyi);
 			sendResponse({"show":"Close"});
 		}else{
-			fanyi.style.display = "block";
+			fanyi = createFanyiDiv();
 			sendResponse({"show":"Show"});
 			window._ju_sound_url = chrome.extension.getURL("sound");
 		}
@@ -143,12 +144,12 @@ function createFanyiDiv(){
 	fanyi.style.background = "#f6f6f6";
 	fanyi.style.padding = "1em";
 	fanyi.style.zIndex = "1999999999";
-	fanyi.style.display = "none";
+	fanyi.style.display = "block";
 	fanyi.style.boxShadow = "1px 1px 5px 1px #ddd";
 	fanyi.style.borderBottomLeftRadius = "10px";
-	fanyi.innerHTML = "极优翻译加载成功";
+	fanyi.innerHTML = "在页面<span style='color:blue;'>选择</span>或<span style='color:blue;'>双击</span>要查询的单词";
 	document.body.appendChild(fanyi);
+	return fanyi;
 }
-createFanyiDiv();
 
 
